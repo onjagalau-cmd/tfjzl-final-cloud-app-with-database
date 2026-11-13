@@ -8,9 +8,9 @@
 {% else %}<div class="alert alert-warning"><h2>Keep practicing</h2><p>You can retake the exam.</p></div>{% endif %}
 <p class="lead">Score: {{ grade }} / {{ max_score }}</p>
 <h2>Exam results</h2>
-{% for question in questions %}<section class="card my-3"><div class="card-header"><strong>Question {{ forloop.counter }}:</strong> {{ question.content }} ({{ question.grade }} points)</div><div class="card-body">
+{% for question in questions %}<section class="card my-3"><div class="card-header"><strong>Question {{ forloop.counter }}:</strong> {{ question.question_text }} ({{ question.grade }} points)</div><div class="card-body">
 <ul class="list-group">{% for choice in question.choice_set.all %}<li class="list-group-item">
-{% if choice in choices %}<strong>Selected: </strong>{% endif %}{{ choice.content }}
+{% if choice in choices %}<strong>Selected: </strong>{% endif %}{{ choice.choice_text }}
 {% if choice.is_correct %}<span class="badge badge-success ml-2">Correct answer</span>{% endif %}</li>{% endfor %}</ul>
 </div></section>{% endfor %}
 <a class="btn btn-primary" href="{% url 'onlinecourse:course_details' course.id %}">Return to course</a>
