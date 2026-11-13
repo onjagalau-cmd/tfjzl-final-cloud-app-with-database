@@ -134,3 +134,43 @@ def extract_answers(request):
 
 
 
+
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect, render
+from .models import Course, Enrollment, Question, Choice, Submission
+
+
+@login_required
+@require_POST
+def submit(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
+    enrollment = get_object_or_404(Enrollment, user=request.user, course=course)
+    ids = []
+    for key in request.POST:
+        if key.startswith('choice_'):
+            try:
+                ids.append(int(request.POST[key]))
+            except (TypeError, ValueError):
+                continue
+    choices = Choice.objects.filter(pk__in=ids, question__course=course)
+    submission = Submission.objects.create(enrollment=enrollment)
+    submission.choices.set(choices)
+    return redirect('onlinecourse:exam_result', course_id=course.id, submission_id=submission.id)
+
+
+@login_required
+def show_exam_result(request, course_id, submission_id):
+    course = get_object_or_404(Course, pk=course_id)
+    submission = get_object_or_404(Submission, pk=submission_id, enrollment__course=course, enrollment__user=request.user)
+    choices = submission.choices.all()
+    selected_ids = set(choices.values_list('id', flat=True))
+    questions = course.question_set.all()
+    total_score = sum(q.grade for q in questions if q.is_get_score(selected_ids))
+    max_score = sum(q.grade for q in questions)
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', {
+        'course': course, 'submission': submission, 'questions': questions,
+        'choices': choices, 'grade': total_score, 'max_score': max_score,
+        'passed': max_score > 0 and total_score * 100 >= max_score * 70,
+    })
