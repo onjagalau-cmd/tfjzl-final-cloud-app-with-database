@@ -157,7 +157,7 @@ def submit(request, course_id):
     choices = Choice.objects.filter(pk__in=ids, question__course=course)
     submission = Submission.objects.create(enrollment=enrollment)
     submission.choices.set(choices)
-    return redirect('onlinecourse:exam_result', course_id=course.id, submission_id=submission.id)
+    return redirect('onlinecourse:show_exam_result', course_id=course.id, submission_id=submission.id)
 
 
 @login_required
